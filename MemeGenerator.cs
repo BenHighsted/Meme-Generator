@@ -1,12 +1,18 @@
-//Ben Highsted MemeGenerator project 2019
+//Ben Highsted MemeGenerator project 2020
 using System;
 using System.Drawing;
+using System.IO;
+
+
 
 //To Compile
 //csc /target:exe /out:MemeGenerator.exe MemeGenerator.cs
 
 //To Run
 //mono MemeGenerator.exe
+
+//IDEA! When in random generation, there is gonna be a numbered template and numbered source images, so using those numbers
+//I should create a "seed" (i.e. T12S3S4S90).
 
 namespace MemeGenerator
 {
@@ -15,59 +21,58 @@ namespace MemeGenerator
         static void Main(string[] args)
         {
             System.Console.WriteLine("Generating...");
-            /**
-            *
-            * As of the 17th, this is the order i'm thinking of doing things
-            * Randomly pick template, which each template will need to have a location and size for the image
-            * Pick source image/(s) to fit template, will depend on the template chosen
-            * Now this will probably be the hardest part; fit the source images to the template
-            * Will need to save the image in a format which can hopefully be posted/sent over the internet
-            * Work out how to post to twitter automatically? (Optional)
-            *
-            */
 
-            //variables which indicate how many templates/source images there are
-            int templates = 1;
-            int source_images = 1;
+            //instance of Random that I will be using; must use the same one to keep it random.
+            Random rand = new Random();
 
-            //instance of Random that I will be using; must use the same on to keep it random.
-            Random rnd = new Random();
+            //code that randomly selects a file from a directory.
+            var templates = Directory.GetFiles("templates", "*.jpg");
+            int templateNum = rand.Next(templates.Length);
+            Image template = Image.FromFile(templates[templateNum]);
+            System.Console.WriteLine(templateNum);
 
-            //selects random template and source_image based on the variables declared above
-            int template_rand  = rnd.Next(1, templates);
-            int source_images_rand  = rnd.Next(1, source_images);
+            //These contain the sizes that the source images will need to be to fit into the selected template.
+            //i.e. template one (templates[0]) source images need to be 200, 300 (height[0] and width[0])
+            int[] height = new int[]{200, 300, 400, 300};
+            int[] width = new int[]{200, 300, 400, 300};
 
-            //holds all the template positions (where images need to be placed)
-            int[] template_positions = {100};
-            //Rather than doing this, thinking of doing square detection (i.e. black square) which might be found in the following
-            //https://stackoverflow.com/questions/5945156/c-sharp-detect-rectangles-in-image
-            //Might need to use square detection code to also find out how many images are needed
+            //These are the arrays (2D) to hold the positions for the images.
+            int length = templates.Length;
 
-            //creates the file-strings to be used to fetch the files based on the random generator
-            string templateString = "template" + template_rand + ".png";
-            System.Console.WriteLine("Template chosen: " + test);
+            int[,] x = new int[,]{{12, 30, 0, 0, 0, 0},{12, 30, 40, 50, 60, 70},{12, 12, 0, 0, 0, 0}};
+            int[,] y = new int[,]{{12, 30, 0, 0, 0, 0},{12, 30, 40, 50, 60, 70},{12, 12, 0, 0, 0, 0}};
 
-            //first load in template
-            Image template = Image.FromFile(templateString);
+            //the number of images on the specified template
+            int[] number_of_images = new int[]{2, 2, 2, 4};
+            System.Console.WriteLine(number_of_images[templateNum]);
+            
+            
+            var images = Directory.GetFiles("images", "*.jpg");
+            int imageNum = rand.Next(images.Length);
 
-            //next, load in the source image
-            Image source_image = Image.FromFile("juvia.png");
+            //plan is to call an image, resize it, draw it, then move onto the next one.
+            for(int i = 0; i < number_of_images[templateNum]; i++){
+                
+            }
 
-            //attempting to resize image here
-            source_image = resizeImage(source_image, 1000, 1000);
+            Image source_image = Image.FromFile(images[imageNum]);
 
-            //create a graphics object using the template
+            //attempting to resize image here (image, height, width)
+            source_image = resizeImage(source_image, 500, 500);
+
+            //create a graphics object using the template // Image.FromFile(templates[1])
             Graphics g = Graphics.FromImage(template);
 
-            //draw the source image onto the template
-            g.DrawImage(source_image, 100, 100);
+            //draw the source image onto the template (image, x, y)
+            g.DrawImage(source_image, 0, 0);
 
             //save the image under the name 'result'
             template.Save("result.jpg");
 
-            System.Console.WriteLine("Finished Processing Image");
+            System.Console.WriteLine("Meme created!");
         }
 
+        /** Method used to resize an image to a specified height and width */
         public static Image resizeImage(Image image, int new_height, int new_width)
         {
             Bitmap new_image = new Bitmap(new_width, new_height);
