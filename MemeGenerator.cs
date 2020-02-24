@@ -12,9 +12,6 @@ using System.Collections.Generic;
 //To Run
 //mono MemeGenerator.exe
 
-//IDEA! When in random generation, there is gonna be a numbered template and numbered source images, so using those numbers
-//I should create a "seed" (i.e. T12S3S4S90).
-
 namespace MemeGenerator
 {
     class Meme
@@ -22,6 +19,7 @@ namespace MemeGenerator
         static void Main(string[] args)
         {
             List<int> list = new List<int>();
+            List<int> seed_numbers = new List<int>();
             System.Console.WriteLine("Generating...");
 
             //instance of Random that I will be using; must use the same one to keep it random.
@@ -31,29 +29,26 @@ namespace MemeGenerator
             var templates = Directory.GetFiles("templates", "*.jpg");
             int templateNum = rand.Next(templates.Length);
             Image template = Image.FromFile(templates[templateNum]);
-            System.Console.WriteLine(templateNum);
-
-            //These contain the sizes that the source images will need to be to fit into the selected template.
-            //i.e. template one (templates[0]) source images need to be 200, 300 (height[0] and width[0])
-            int[] height = new int[]{300, 85, 300, 260, 200, 200};
-            int[] width = new int[]{280, 85, 300, 240, 200, 200};
-
-            //These are the arrays (2D) to hold the positions for the images.
             int length = templates.Length;
 
-            int[,] x = new int[,]{{545, 545, 0, 0, 0, 0},{120, 310, 0, 0, 0, 0},{300, 300, 0, 0, 0, 0},{125, 535, 940, 125, 535, 940}};
+            seed_numbers.Add(templateNum);
+
+            //These contain the sizes that the source images will need to be to fit into the selected template.
+            int[] height = new int[]{300, 85, 300, 260, 200, 200};
+            int[] width = new int[]{300, 85, 300, 240, 200, 200};
+
+            //These are the arrays (2D) to hold the positions for the images.
+
+            int[,] x = new int[,]{{540, 540, 0, 0, 0, 0},{120, 310, 0, 0, 0, 0},{300, 300, 0, 0, 0, 0},{125, 535, 940, 125, 535, 940}};
             int[,] y = new int[,]{{55, 435, 0, 0, 0, 0},{92, 60, 0, 0, 0, 0},{0, 300, 0, 0, 0, 0},{200, 200, 200, 590, 590, 590}};
 
             //the number of images on the specified template
             int[] number_of_images = new int[]{2, 2, 2, 6};
-            System.Console.WriteLine(number_of_images[templateNum]);
 
             Graphics g = Graphics.FromImage(template); //places template
             
             //reads in images
             var images = Directory.GetFiles("images", "*.jpg");
-
-            //plan is to call an image, resize it, draw it, then move onto the next one.
             
             for(int i = 0; i < number_of_images[templateNum]; i++){
                 bool duplicate = false;
@@ -61,9 +56,9 @@ namespace MemeGenerator
 
                 if (!list.Contains(imageNum)){
                     list.Add(imageNum);
-                } else {
-                    //duplicate number
-                    i = i - 1; //not sure if this works yet, but hopefully will add 1 more loop every duplicate
+                    seed_numbers.Add(imageNum);
+                } else { //duplicate number
+                    i = i - 1;
                     duplicate = true;
                 }
                 //now that we know it hasnt been generated yet, we can continue
@@ -78,6 +73,9 @@ namespace MemeGenerator
             template.Save("result.jpg");
 
             System.Console.WriteLine("Meme created!");
+            
+            Console.Write("Generated Seed: ");
+            seed_numbers.ForEach(item => Console.Write(item));
         }
 
         /** Method used to resize an image to a specified height and width */
